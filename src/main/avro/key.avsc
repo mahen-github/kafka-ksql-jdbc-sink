@@ -1,0 +1,8 @@
+{
+  "namespace": "com.mahendran.poc.kafka",
+  "name": "key",
+  "type": "record",
+  "fields" : [
+    {"name": "key", "type": "string"}
+  ]
+}

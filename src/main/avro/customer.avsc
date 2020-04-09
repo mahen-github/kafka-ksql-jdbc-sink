@@ -1,0 +1,12 @@
+{
+  "namespace": "com.mahendran.poc.kafka",
+  "name": "customer",
+  "type": "record",
+  "fields" : [
+    {"name": "customer", "type": "string", "default": "null"},
+    {"name": "age", "type": "int"},
+    {"name": "dept", "type": "string"},
+    {"name": "salary", "type": "int", "default": 0},
+    {"name": "creationTime", "type": "long"}
+  ]
+}
