@@ -1,4 +1,3 @@
-==============================================================================
 #kafka-ksql-to-sink
 ==============================================================================
 
@@ -13,6 +12,7 @@ Avro console consumer
                                 --topic customer_primitive_avro \
                                 --from-beginning | \
                                 jq '.'
+
 load the connector
 ==================
 /Users/e1xx/Downloads/confluent-5.4.1/bin/confluent local load jdbc-sink -- -d customer_primitive_avro-sink.json
@@ -24,7 +24,7 @@ tail -f /var/folders/q7/xsq29v6s659dq4xl0ll36bg0wzq6w9/T/confluent.cnlBWQI6/conn
 
 ./confluent-5.4.1/bin/confluent local log connect --f
 
-# To connect to psql
+To connect to psql
 ====================
 psql -h localhost -U marvel nap-poc
 
