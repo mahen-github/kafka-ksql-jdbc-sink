@@ -15,9 +15,15 @@ function createTopic(){
   eval ${_cmd}
 }
 
+#"customer_complex_avro"
+#"customer_complex_record_avro"
+#"customer_identity_address_avro"
+#"customer_identity_address_avro_1"
 topics=(
 "customer_primitive_avro"
-"customer_complex_avro"
+"customer_identity_address_avro"
+"customer_array_avro"
+"customer_identity_address_avro_tfivek"
 )
 
 for topic in ${topics[@]}; do

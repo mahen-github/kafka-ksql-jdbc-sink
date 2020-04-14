@@ -1,5 +1,5 @@
 {
-  "name": "customer_primitive_avro_version-1",
+  "name": "customer_identity_address_avro_version-1",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
     "key.converter": "io.confluent.connect.avro.AvroConverter",
@@ -9,7 +9,7 @@
     "value.converter.schemas.enable": "true",
 
     "dialect.name": "PostgreSqlDatabaseDialect",
-    "table.name.format": "CUSTOMER",
+    "table.name.format": "CUSTOMER_IDENTITY_ADDRESS",
 
     "connection.url": "jdbc:postgresql://localhost:5432/nap-poc",
     "connection.user": "marvel",
@@ -17,7 +17,7 @@
     "insert.mode": "upsert",
     "auto.create": true,
     "auto.evolve": true,
-    "topics": "customer_primitive_avro",
+    "topics": "customer_identity_address_avro",
     "pk.mode": "record_key"
   }
 }

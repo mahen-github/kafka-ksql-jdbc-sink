@@ -2,16 +2,13 @@ version: '3.6'
 
 services:
     postgres:
-        image: postgres:latest
+        image: debezium/postgres:latest
         restart: always
-        container_name: mahendran-postgres
+        container_name: debezium-postgres
         environment:
           POSTGRES_PASSWORD: marvel
           POSTGRES_USER: marvel
           POSTGRES_DB: nap-poc
         ports:
           - 5432:5432
-        volumes:
-          - database-data:/var/lib/postgresql/data
-volumes:
-  database-data:
+        command: [ "postgres", "-c", "wal_level=logical" ]        

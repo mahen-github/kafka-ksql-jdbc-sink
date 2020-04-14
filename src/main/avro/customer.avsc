@@ -3,10 +3,17 @@
   "name": "customer",
   "type": "record",
   "fields" : [
-    {"name": "customer", "type": "string", "default": "null"},
+    {"name": "id", "type": "string"},
+    {"name": "name", "type": "string", "default": "null"},
     {"name": "age", "type": "int"},
-    {"name": "dept", "type": "string"},
     {"name": "salary", "type": "int", "default": 0},
+    {"name": "dept",   "type": [
+      "null",
+      {
+        "type": "string",
+        "avro.java.string": "String"
+      }
+    ]},
     {"name": "creationTime", "type": "long"}
   ]
 }

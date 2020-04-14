@@ -1,0 +1,10 @@
+@namespace("com.mahendran.data.customer")
+protocol CustomerFull{
+
+record CustomerFullR {
+
+string id;
+string firstName;
+string lastName;
+}
+}

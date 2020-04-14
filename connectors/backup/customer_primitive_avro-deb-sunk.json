@@ -1,5 +1,5 @@
 {
-  "name": "customer_primitive_avro_version-1",
+  "name": "customer_primitive_avro-1",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
     "key.converter": "io.confluent.connect.avro.AvroConverter",
@@ -7,9 +7,6 @@
     "value.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter.schema.registry.url": "http://localhost:8081",
     "value.converter.schemas.enable": "true",
-
-    "dialect.name": "PostgreSqlDatabaseDialect",
-    "table.name.format": "CUSTOMER",
 
     "connection.url": "jdbc:postgresql://localhost:5432/nap-poc",
     "connection.user": "marvel",

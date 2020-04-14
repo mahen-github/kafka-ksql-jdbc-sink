@@ -1,0 +1,81 @@
+{
+  "namespace": "com.mahendran.poc.kafka",
+  "name": "CustomerWithCustomerIdentity",
+  "type": "record",
+  "fields" : [
+    {"name": "id", "type": "string"},
+    {"name": "age", "type": "int"},
+    {"name": "dept", "type": "string"},
+    {"name": "creationTime", "type": "long"},
+    {
+      "name": "customerIdentity",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "customerIdentity",
+          "fields": [
+            {
+              "name": "firstName",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "doc": "First name provided by customer at creation, or update, of record. Required field for ICON records. Names are subject to data format standards.",
+              "default": null
+            },
+            {
+              "name": "lastName",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "doc": "Last name provided by customer at creation, or update, of record. Required field for ICON records. Names are subject to data format standards.",
+              "default": null
+            }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "addresses",
+      "type": [
+        "null",
+        {
+          "type": "array",
+          "items": {
+            "type": "record",
+            "name": "addresses",
+            "fields": [
+              {
+                "name": "addressId",
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "default": null
+              }
+            ]
+          }
+        }
+      ],
+      "default": null
+    },
+    {
+      "name" : "attributedBy",
+      "type" : {
+        "type" : "array",
+        "items" : "string"
+      },
+      "doc" : "The source (ICON Partner) that contributed the card data to this record. Typically WEB, NFSB, etc.",
+      "default" : [ ]
+    }
+  ]
+}

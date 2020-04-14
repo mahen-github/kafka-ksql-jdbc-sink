@@ -1,3 +1,6 @@
+import com.commercehub.gradle.plugin.avro.GenerateAvroProtocolTask
+import com.commercehub.gradle.plugin.avro.GenerateAvroSchemaTask
+
 buildscript {
     repositories {
         maven {
@@ -165,6 +168,7 @@ tasks.withType(com.github.spotbugs.SpotBugsTask) {
     reports.xml.enabled = false
     reports.html.enabled = true
     ignoreFailures = false
+    excludeFilter = file("$project.rootDir/spotbugs_exclude.xml")
 }
 
 tasks.withType(JavaCompile) {
@@ -214,4 +218,34 @@ jar {
         configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+}
+
+def allAvprs = "$buildDir/generated-main-avro-avpr"
+def allAvscs = "$buildDir/generated-main-avro-avsc"
+
+task copySchemas(type: Copy) {
+    from "src/main/avro"
+    include("**/*.avsc")
+    into allAvscs
+}
+task("generateProtocol", type: GenerateAvroProtocolTask) {
+    source file("src/main/avro")
+    include("**/*.avdl")
+    outputDir = file(allAvprs)
+}
+
+task("generateSchema", type: GenerateAvroSchemaTask) {
+    dependsOn generateProtocol
+    source file("src/main/avro")
+    source file(allAvprs)
+    include("**/*.avpr")
+    outputDir = file(allAvscs)
+}
+
+jar {
+    from('build/generated-main-avro-avsc/') {
+        include '**/*.avsc'
+        into 'avro'
+    }
+    dependsOn generateSchema
 }

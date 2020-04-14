@@ -1,6 +1,6 @@
 {
   "namespace": "com.mahendran.poc.kafka",
-  "name": "Customer",
+  "name": "CustomerWithArray",
   "type": "record",
   "fields" : [
     {"name": "customer", "type": "string", "default": "null"},

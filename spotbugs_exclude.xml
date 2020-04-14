@@ -1,0 +1,6 @@
+<FindBugsFilter>
+  <!-- we are ignoring the validation on the avro objects -->
+  <Match>
+    <Package name="com.mahendran.poc.kafka"/>
+  </Match>
+</FindBugsFilter>

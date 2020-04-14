@@ -1,0 +1,19 @@
+{
+  "name": "CUSTOMER_PRIMITIVE_AVRO_TABLE_NORM_DEB_2_LOGICAL-1",
+  "config": {
+
+ "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+"tasks.max":"1",
+"database.hostname":"localhost",
+"database.port":"5432",
+"database.user":"marvel",
+"database.password":"marvel",
+"database.dbname" :"nap-poc",
+"database.server.name":"local-deb",
+"database.whitelist":"nap-poc",
+"database.history.kafka.bootstrap.servers":"kafka:9092",
+"database.history.kafka.topic":"CUSTOMER_COMPLEX_AVRO_TABLE_NORM"
+
+
+  }
+}

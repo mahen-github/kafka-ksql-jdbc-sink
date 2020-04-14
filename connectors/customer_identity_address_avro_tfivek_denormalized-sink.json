@@ -1,15 +1,17 @@
 {
-  "name": "customer_primitive_avro_version-1",
+  "name": "CUSTOMER_IDENTITY_ADDRESS_AVRO_TFIVEK_DENORMALIZED_Version-6",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
-    "key.converter": "io.confluent.connect.avro.AvroConverter",
-    "key.converter.schema.registry.url": "http://localhost:8081",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schemas.enable": "false",
+
     "value.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter.schema.registry.url": "http://localhost:8081",
     "value.converter.schemas.enable": "true",
 
+
     "dialect.name": "PostgreSqlDatabaseDialect",
-    "table.name.format": "CUSTOMER",
+    "table.name.format": "CUSTOMER_IDENTITY_ADDRESS_AVRO_TFIVEK_DENORMALIZED-1",
 
     "connection.url": "jdbc:postgresql://localhost:5432/nap-poc",
     "connection.user": "marvel",
@@ -17,7 +19,7 @@
     "insert.mode": "upsert",
     "auto.create": true,
     "auto.evolve": true,
-    "topics": "customer_primitive_avro",
-    "pk.mode": "record_key"
+    "topics": "CUSTOMER_IDENTITY_ADDRESS_AVRO_TFIVEK_DENORMALIZED",
+    "pk.mode": "record_value"
   }
 }

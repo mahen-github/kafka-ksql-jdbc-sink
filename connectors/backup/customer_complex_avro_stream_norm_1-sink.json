@@ -1,15 +1,16 @@
 {
-  "name": "customer_primitive_avro_version-1",
+  "name": "customer_complex_avro_stream_norm_4-sink",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
-    "key.converter": "io.confluent.connect.avro.AvroConverter",
-    "key.converter.schema.registry.url": "http://localhost:8081",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schemas.enable": "false",
+ 
     "value.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter.schema.registry.url": "http://localhost:8081",
     "value.converter.schemas.enable": "true",
 
     "dialect.name": "PostgreSqlDatabaseDialect",
-    "table.name.format": "CUSTOMER",
+    "table.name.format": "customers",
 
     "connection.url": "jdbc:postgresql://localhost:5432/nap-poc",
     "connection.user": "marvel",
@@ -17,7 +18,8 @@
     "insert.mode": "upsert",
     "auto.create": true,
     "auto.evolve": true,
-    "topics": "customer_primitive_avro",
-    "pk.mode": "record_key"
+    "topics": "CUSTOMER_COMPLEX_AVRO_TABLE_NORM_2",
+    "pk.mode": "record_value",
+    "pk.fields": "CUSTOMER"
   }
 }
