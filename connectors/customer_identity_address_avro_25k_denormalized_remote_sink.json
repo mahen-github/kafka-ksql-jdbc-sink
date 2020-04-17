@@ -1,0 +1,21 @@
+{
+  "name": "CUSTOMER_IDENTITY_ADDRESS_AVRO25K_DENORMALIZED_Remote_sink_Version-7",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://localhost:8081",
+    "value.converter.schemas.enable": "true",
+    "dialect.name": "PostgreSqlDatabaseDialect",
+    "table.name.format": "CUSTOMER_IDENTITY_ADDRESS_AVRO_TFIVEK_DENORMALIZED",
+    "connection.url": "jdbc:postgresql://mahenetl-instance-1.ciqycdajzfou.us-west-2.rds.amazonaws.com:5432/mahendb",
+    "connection.user": "postgres",
+    "connection.password": "admin1234",
+    "insert.mode": "upsert",
+    "auto.create": true,
+    "auto.evolve": true,
+    "topics": "CUSTOMER_IDENTITY_ADDRESS_AVRO_TFIVEK_DENORMALIZED",
+    "pk.mode": "record_value"
+  }
+}

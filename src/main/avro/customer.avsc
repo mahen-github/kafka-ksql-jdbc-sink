@@ -1,19 +1,43 @@
 {
   "namespace": "com.mahendran.poc.kafka",
-  "name": "customer",
+  "name": "Customer",
   "type": "record",
-  "fields" : [
-    {"name": "id", "type": "string"},
-    {"name": "name", "type": "string", "default": "null"},
-    {"name": "age", "type": "int"},
-    {"name": "salary", "type": "int", "default": 0},
-    {"name": "dept",   "type": [
-      "null",
-      {
-        "type": "string",
-        "avro.java.string": "String"
-      }
-    ]},
-    {"name": "creationTime", "type": "long"}
+  "fields": [
+    {
+      "name": "id",
+      "type": "string",
+      "doc": "The source (ICON Partner) that contributed the card data to this record. Typically WEB, NFSB, etc."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "null",
+      "doc": "The source (ICON Partner) that contributed the card data to this record. Typically WEB, NFSB, etc."
+    },
+    {
+      "name": "age",
+      "type": "int",
+      "doc": "The source (ICON Partner) that contributed the card data to this record. Typically WEB, NFSB, etc."
+    },
+    {
+      "name": "salary",
+      "type": "int",
+      "default": 0,
+      "doc": "The source (ICON Partner) that contributed the card data to this record. Typically WEB, NFSB, etc."
+    },
+    {
+      "name": "dept",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ]
+    },
+    {
+      "name": "creationTime",
+      "type": "long"
+    }
   ]
 }

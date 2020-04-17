@@ -1,24 +1,30 @@
 package com.mahen.poc.producer;
 
+import com.mahendran.poc.kafka.Customer;
 import com.mahendran.poc.kafka.CustomerWithArray;
 import com.mahendran.poc.kafka.CustomerWithCustomerIdentity;
 import com.mahendran.poc.kafka.addresses;
-import com.mahendran.poc.kafka.customer;
 import com.mahendran.poc.kafka.customerIdentity;
 import com.mahendran.poc.kafka.key;
 import com.nordstrom.events.sdk.MessageHeaders;
 import com.nordstrom.nap.arguments.Arguments;
 import com.nordstrom.nap.utils.AvroUtils;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.header.internals.RecordHeader;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 /**
  * Publishes an event to a local kafka topic.
@@ -26,6 +32,9 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 public class KafkaProducerUtility {
 
   private static final Arguments arguments = new Arguments();
+  private static final String SASL_ACCESS_KEY = "SASL_ACCESS_KEY";
+  private static final String SASL_SECRET = "SASL_SECRET";
+  private static KafkaProducer producer;
 
   /**
    * Overwrites argument fields with local development values.
@@ -41,13 +50,18 @@ public class KafkaProducerUtility {
 
   private static KafkaProducer kafkaProducer() {
     Properties props = new Properties();
-    props.setProperty("bootstrap.servers", arguments.bootstrapServers);
-    props.setProperty("key.serializer", KafkaAvroSerializer.class.getName());
-    props.setProperty("value.serializer", KafkaAvroSerializer.class.getName());
-    props.setProperty("compression.type", "snappy");
-    props.setProperty("schema.registry.url", arguments.schemaRegistryUrl);
-    props.put("auto.register.schemas", true);
 
+    props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, arguments.bootstrapServers);
+    props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+    props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+        KafkaAvroSerializer.class.getName());
+    props.setProperty(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+    props.setProperty(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
+        arguments.schemaRegistryUrl);
+    props.put(AbstractKafkaAvroSerDeConfig.AUTO_REGISTER_SCHEMAS, true);
+    if (arguments.useSasl) {
+      addSaslProperties(props);
+    }
     return new KafkaProducer(props);
   }
 
@@ -97,12 +111,13 @@ public class KafkaProducerUtility {
         .build();
   }
 
-  private static customer customer(String id) {
-    return customer.newBuilder()
+  private static Customer customer(String id) {
+    return Customer.newBuilder()
         .setId("customer-" + id)
         .setName("customer-" + id)
         .setAge(1)
         .setSalary(10000)
+        .setDept("cs")
         .setCreationTime(Instant.now().toEpochMilli())
         .build();
   }
@@ -123,7 +138,8 @@ public class KafkaProducerUtility {
       setLocalEnv();
 
       KafkaProducer producer = kafkaProducer();
-      ProducerRecord<key, customer> recordTo = new ProducerRecord<>(topic, key(id),
+      System.out.println(new AvroUtils().toBytes(customer(id)).length);
+      ProducerRecord<key, Customer> recordTo = new ProducerRecord<>(topic, key(id),
           customer(id));
       producer.send(recordTo);
       producer.flush();
@@ -138,7 +154,6 @@ public class KafkaProducerUtility {
   public static void produceCustomerWithArray(String topic) {
     try {
       var id = UUID.randomUUID().toString();
-      setLocalEnv();
       KafkaProducer producer = kafkaProducer();
       ProducerRecord<key, CustomerWithArray> recordTo = new ProducerRecord<>(topic,
           key(id),
@@ -156,12 +171,9 @@ public class KafkaProducerUtility {
   public static void produceCustomerIdentityAndAddress(String topic) {
     try {
       var id = UUID.randomUUID().toString();
-      setLocalEnv();
-      System.out.println(new AvroUtils().toBytes(customerWithCustomerIdentity(id)).length);
-      KafkaProducer producer = kafkaProducer();
       ProducerRecord<key, CustomerWithCustomerIdentity> recordTo = new ProducerRecord<>(topic,
-          key(id),
           customerWithCustomerIdentity(id));
+//      addMessageHeader(recordTo, "CustomerEvent");
       producer.send(recordTo);
       producer.flush();
     } catch (Exception e) {
@@ -174,7 +186,11 @@ public class KafkaProducerUtility {
    */
   public static void main(String[] args) {
 
-    String topic = "customer_primitive_avro";
+//    setNonProd();
+    setLocalEnv();
+    producer = kafkaProducer();
+
+    String topic = "customer_primitive_avro_new";
     produceEvent(topic);
     String arrayTopic = "customer_array_avro";
     produceCustomerWithArray(arrayTopic);
@@ -182,5 +198,39 @@ public class KafkaProducerUtility {
     KafkaProducerUtility.produceCustomerIdentityAndAddress(customerIdentityAddressAvro);
     String customerIdentityAddressAvroTfivek = "customer_identity_address_avro_tfivek";
     KafkaProducerUtility.produceCustomerIdentityAndAddress(customerIdentityAddressAvroTfivek);
+
+    String customerIdentityAddressAvro1 = "customer_identity_address_avro_no_headers_partitioned";
+    for (int i = 0; i < 25000; i++) {
+      KafkaProducerUtility.produceCustomerIdentityAndAddress(customerIdentityAddressAvro1);
+    }
+  }
+
+  private static void addSaslProperties(Properties props) {
+    props.setProperty(AbstractKafkaAvroSerDeConfig.BASIC_AUTH_CREDENTIALS_SOURCE,
+        "SASL_INHERIT");
+    props.setProperty(AdminClientConfig.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
+    props.setProperty(SaslConfigs.SASL_MECHANISM, "SCRAM-SHA-512");
+    props.setProperty(
+        SaslConfigs.SASL_JAAS_CONFIG,
+        String.format(
+            "org.apache.kafka.common.security.scram.ScramLoginModule "
+                + " required username=\"%s\" password=\"%s\";",
+            getSecrets().get(SASL_ACCESS_KEY), getSecrets().get(SASL_SECRET)));
+  }
+
+  /**
+   * Add secrets.
+   *
+   * @return Map of access and secret key value
+   */
+  private static Map<String, String> getSecrets() {
+    return Map.of(SASL_ACCESS_KEY, "", SASL_SECRET, "");
+  }
+
+  private static void setNonProd() {
+    arguments.bootstrapServers = "brook.nonprod.us-west-2.aws.proton.nordstrom.com:9093";
+    arguments.schemaRegistryUrl = "https://schema-registry.nonprod.us-west-2.aws.proton.nordstrom.com/";
+    arguments.useSasl = true;
+    arguments.groupId = UUID.randomUUID().toString();
   }
 }

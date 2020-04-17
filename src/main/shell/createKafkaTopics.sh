@@ -20,10 +20,14 @@ function createTopic(){
 #"customer_identity_address_avro"
 #"customer_identity_address_avro_1"
 topics=(
+"customer_primitive_avro_new"
 "customer_primitive_avro"
 "customer_identity_address_avro"
 "customer_array_avro"
 "customer_identity_address_avro_tfivek"
+"customer_identity_address_avro_with_headers"
+"customer_identity_address_avro_new"
+"customer_identity_address_avro_no_headers"
 )
 
 for topic in ${topics[@]}; do
