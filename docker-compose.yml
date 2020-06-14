@@ -1,14 +1,122 @@
-version: '3.6'
-
+version: '3.7'
 services:
-    postgres:
-        image: debezium/postgres:latest
-        restart: always
-        container_name: debezium-postgres
-        environment:
-          POSTGRES_PASSWORD: marvel
-          POSTGRES_USER: marvel
-          POSTGRES_DB: nap-poc
-        ports:
-          - 5432:5432
-        command: [ "postgres", "-c", "wal_level=logical" ]        
+  postgres:
+    image: debezium/postgres:latest
+    restart: always
+    container_name: debezium-postgres
+    environment:
+      POSTGRES_PASSWORD: marvel
+      POSTGRES_USER: marvel
+      POSTGRES_DB: nap-poc
+    ports:
+      - 5432:5432
+    command: [ "postgres", "-c", "wal_level=logical" ]
+  minio:
+    image: minio/minio:RELEASE.2018-08-02T23-11-36Z
+    hostname: minio
+    volumes:
+      - /tmp/data:/data
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
+      MINIO_SECRET_KEY: $MINIO_SECRET_KEY
+      MINIO_REGION_NAME: "us-west-2"
+    command: server /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "$MINIO_HOST/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  zookeeper:
+    image: confluentinc/cp-zookeeper:$CP_VERSION
+    hostname: zookeeper
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_LOG4J_ROOT_LOGLEVEL: ERROR
+      ZOOKEEPER_TOOLS_LOG4J_LOGLEVEL: ERROR
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - 2181:2181
+  kafka:
+    image: confluentinc/cp-kafka:$CP_VERSION
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LOG4J_ROOT_LOGLEVEL: ERROR
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: ERROR
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=ERROR,state.change.logger=ERROR,kafka.log.LogCleaner=ERROR,kafka=ERROR"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_HOST://localhost:9092,PLAINTEXT://kafka:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+  schema-registry:
+    image: confluentinc/cp-schema-registry:$CP_VERSION
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - zookeeper
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: ERROR
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
+      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
+      SCHEMA_REGISTRY_DEBUG: "true"
+  connect:
+    image: confluentinc/cp-kafka-connect:$CP_VERSION
+    hostname: connect
+    container_name: connect
+    depends_on:
+      - minio
+      - zookeeper
+      - kafka
+      - schema-registry
+    ports:
+      - 28082:28082
+    environment:
+      AWS_ACCESS_KEY_ID: $MINIO_ACCESS_KEY
+      AWS_SECRET_ACCESS_KEY: $MINIO_SECRET_KEY
+      CONNECT_BOOTSTRAP_SERVERS: kafka:29092
+      CONNECT_LOG4J_ROOT_LOGLEVEL: ERROR
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_REST_PORT: 28082
+      CONNECT_GROUP_ID: $CONNECT_GROUP_ID
+      CONNECT_CONFIG_STORAGE_TOPIC: $CONNECT_GROUP_ID-config
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_TOPIC: $CONNECT_GROUP_ID-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: $CONNECT_GROUP_ID-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_PLUGIN_PATH: /usr/share/java
+  create-buckets:
+    image: minio/mc
+    container_name: create-buckets
+    depends_on:
+      - minio
+    volumes:
+      - ./local_dev/createbuckets.sh:/createbuckets.sh
+    entrypoint:
+      - /createbuckets.sh
+      - $MINIO_ACCESS_KEY
+      - $MINIO_SECRET_KEY
+      - $MINIO_BUCKETS

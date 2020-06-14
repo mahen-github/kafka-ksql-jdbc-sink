@@ -1,0 +1,65 @@
+@namespace("com.mahendran.event")
+protocol CustomerEvent {
+
+  record Customer {
+
+    string customerId;
+
+    int age=0;
+
+    long creationTime;
+
+    union {null, CustomerIdentity} customerIdentity = null;
+
+    array<Addresses> addresses = [];
+
+    union{null, MembershipType} membershipType = null;
+
+  }
+
+  record CustomerIdentity {
+    union{null, string} Name = null;
+    map<string> email = {};
+    array<Phone> phone = [];
+  }
+
+  record Phone {
+    string contactType;
+
+    string number;
+  }
+
+  record Addresses {
+
+    union{null, string} addressId = null;
+
+    union{null, string} line1 = null;
+
+    union{null, string} city = null;
+
+    union{null, string} state = null;
+
+    union{null, string} country = null;
+
+    union{null, string} postalCode = null;
+
+  /**Typical values are BILLING, SHIPPING.*/
+    array<string> addressTypes = [];
+
+  }
+
+  enum contactType {
+    HOME,
+    WORK,
+    MOBILE
+  }
+
+/**The type for the card holder. (P) Primary, (C) Co-Applicant, or (A) Authorized User, or (U) Unknown.*/
+  enum MembershipType {
+    VIP,
+    LOYALTY,
+    REGULAR,
+    UNKNOWN
+  }
+
+}

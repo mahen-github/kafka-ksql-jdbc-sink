@@ -4,18 +4,13 @@ import com.commercehub.gradle.plugin.avro.GenerateAvroSchemaTask
 buildscript {
     repositories {
         maven {
-            url 'https://artifactory.nordstrom.com/artifactory/gradle'
-            credentials {
-                username = "${artifactory_user}"
-                password = "${artifactory_api_key}"
-            }
+            url "https://plugins.gradle.org/m2/"
         }
         maven {
-            url 'https://artifactory.nordstrom.com/artifactory/maven'
-            credentials {
-                username = "${artifactory_user}"
-                password = "${artifactory_api_key}"
-            }
+            url = 'https://packages.confluent.io/maven/'
+        }
+        maven {
+            url = 'https://repo.maven.apache.org/maven2'
         }
     }
     dependencies {
@@ -24,6 +19,7 @@ buildscript {
         classpath 'io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE'
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
         classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.17.0"
+        classpath "com.github.imflog:kafka-schema-registry-gradle-plugin:0.9.0"
     }
 }
 
@@ -40,24 +36,10 @@ application {
 }
 
 ext {
-    //https://proton.vip.nordstrom.com/docs/faq.html#what-version-of-kafka-do-you-run
-    confluentVersion = '5.4.1'
-    kafkaVersion = '2.4.0'
-    kstreamsVersion = '2.4.0'
-
-    //NAP dependencies
-    eventSdkVersion = '0.8.2'
-    scaffoldVersion = 'HEAD-9ba343c'
-
-    //AWS dependencies
-    awsEncryptionSdkVersion = '1.3.6'
-    awsSdk2BomVersion = '2.3.7'
-    awsSdkBomVersion = '1.11.754'
-    dynamoDBClientLegacyVersion = '1.11.489'
-
-    //Metrics
-    dogstatsdVersion = '2.7'
-    newrelicVersion = '5.1.0'
+    //Kafka Version
+    confluentVersion = '5.4.2'
+    kafkaVersion = '2.5.0'
+    kstreamsVersion = '2.5.0'
 
     //Coding standards
     annotationsVersion = '18.0.0'
@@ -92,36 +74,15 @@ apply plugin: "com.commercehub.gradle.plugin.avro-base"
 apply plugin: "com.commercehub.gradle.plugin.avro"
 apply plugin: "com.github.imflog.kafka-schema-registry-gradle-plugin"
 
-group 'com.mahen.poc'
+group 'com.mahendran.kafka'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 dependencies {
-    //NAP
-    implementation("com.nordstrom.nap.ingestion:scaffold:$scaffoldVersion") {
-        exclude group: 'com.nordstrom.nap.ingestion', module: 'schemas'
-        exclude group: 'com.nordstrom.nap', module: 'schemas'
-        exclude group: 'com.nordstrom.nap', module: 'core'
-    }
-    implementation("com.nordstrom.events:sdk:$eventSdkVersion") {
-        exclude group: 'com.nordstrom.event.common', module: 'schema-repository'
-    }
-
-    //AWS
-    implementation "com.amazonaws:aws-encryption-sdk-java:$awsEncryptionSdkVersion"
-    implementation "com.amazonaws:aws-java-sdk-dynamodb:$awsSdkBomVersion"
-    implementation "com.amazonaws:aws-java-sdk-kms:$awsSdkBomVersion"
-    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
-    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
-
-    implementation "com.datadoghq:java-dogstatsd-client:$dogstatsdVersion"
     implementation "com.google.guava:guava:$guavaVersion"
-    implementation "com.newrelic.agent.java:newrelic-api:$newrelicVersion"
     implementation "commons-io:commons-io:$commonsIoVersion"
-    implementation "info.picocli:picocli:$picoCliVersion"
-
     //Kafka
     implementation "io.confluent:kafka-avro-serializer:$confluentVersion"
     implementation "io.confluent:kafka-streams-avro-serde:$confluentVersion"
@@ -140,19 +101,9 @@ dependencies {
 }
 
 repositories {
+    mavenCentral()
     maven {
-        url = uri("https://artifactory.nordstrom.com/artifactory/gradle")
-        credentials {
-            username = "${artifactory_user}"
-            password = "${artifactory_api_key}"
-        }
-    }
-    maven {
-        url = uri("https://artifactory.nordstrom.com/artifactory/maven")
-        credentials {
-            username = "${artifactory_user}"
-            password = "${artifactory_api_key}"
-        }
+        url "https://packages.confluent.io/maven/"
     }
 }
 

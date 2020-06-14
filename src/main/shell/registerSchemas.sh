@@ -16,8 +16,7 @@ function registerSchema(){
 }
 
 declare arr=(
-examples-consumer-sample-object-model-avro.avsc
-examples-producer-sample-object-model-avro.avsc
+${project_root_dir}/build/generated-main-avro-avsc/com/mahendran/event/Customer.avsc
 )
 
 for schema in ${arr[@]}

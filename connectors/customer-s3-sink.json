@@ -1,0 +1,17 @@
+{
+  "name": "customer-sink-1",
+  "config": {
+    "connector.class": "io.confluent.connect.s3.S3SinkConnector",
+    "tasks.max": "1",
+    "topics": "customer",
+    "s3.bucket.name": "customer-bucket",
+    "s3.part.size": "5242880",
+    "flush.size": "1",
+    "store.url": "http://minio:9000",
+    "storage.class": "io.confluent.connect.s3.storage.S3Storage",
+    "format.class": "io.confluent.connect.s3.format.avro.AvroFormat",
+    "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",
+    "schema.compatibility": "FULL",
+    "name": "customer-sink-1"
+  }
+}

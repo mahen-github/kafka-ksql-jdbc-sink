@@ -1,6 +1,5 @@
-package com.mahen.poc.producer;
+package com.mahendran.kafka;
 
-import com.nordstrom.nap.arguments.Arguments;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
@@ -9,54 +8,36 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-public class KafkaConsumerUtility {
+public class CustomerConsumer {
 
-  private static final Arguments arguments = new Arguments();
-
-  /**
-   * Overwrites argument fields with local development values.
-   */
-  private static void setLocalEnv() {
-    arguments.applicationId = "AppIdSample";
-    arguments.groupId = UUID.randomUUID().toString();
-    arguments.bootstrapServers = "localhost:9092";
-    arguments.schemaRegistryUrl = "http://localhost:8081";
-    arguments.useSasl = false;
-  }
-
-  private static KafkaConsumer<String, SpecificRecordBase> kafkaConsumer() {
-    setLocalEnv();
+  private static Consumer<String, SpecificRecordBase> kafkaConsumer() {
     Properties props = new Properties();
     props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
     props.setProperty(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
     props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-    props.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, arguments.bootstrapServers);
+    props.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+        Constants.LOCAL_KAFKA_BOOTSTRAP_SERVER);
     props.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
         StringDeserializer.class.getName());
     props.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
         KafkaAvroDeserializer.class.getName());
     props.setProperty(ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID().toString());
     props.setProperty(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
-        arguments.schemaRegistryUrl);
+        Constants.LOCAL_SCHEMA_REGISTRY_URL);
 
-    return new KafkaConsumer<>(props);
+    return new org.apache.kafka.clients.consumer.KafkaConsumer<>(props);
   }
 
-  /**
-   * Main class.
-   *
-   * @param args program arguments
-   */
-  public static void main(String[] args) {
+  private static void consume(String topicName) {
     var consumer = kafkaConsumer();
-    consumer.subscribe(List.of("customer_identity_address_avro_new"));
-    int exitAfter = 10;
+    consumer.subscribe(List.of(topicName));
+    final int exitAfter = 10;
 
     try (consumer) {
       //noinspection InfiniteLoopStatement
@@ -76,5 +57,15 @@ public class KafkaConsumerUtility {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  /**
+   * Main class.
+   *
+   * @param args program arguments
+   */
+  public static void main(String[] args) {
+    final String topicName = "customer";
+    consume(topicName);
   }
 }

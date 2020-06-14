@@ -1,0 +1,7 @@
+@namespace("com.mahendran.event")
+protocol CustomerEvent {
+
+  record key{
+    string key;
+  }
+}
