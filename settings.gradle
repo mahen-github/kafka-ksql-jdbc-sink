@@ -1,2 +1,2 @@
-rootProject.name = 'kafka-ksql-to-sink'
+rootProject.name = 'kafka-ksql-jdbc-sink'
 
