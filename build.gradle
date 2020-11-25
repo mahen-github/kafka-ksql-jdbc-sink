@@ -66,16 +66,15 @@ apply plugin: 'checkstyle'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'com.github.spotbugs'
 apply plugin: 'com.jfrog.artifactory'
-apply plugin: 'io.spring.dependency-management'
 apply plugin: 'jacoco'
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply plugin: "com.commercehub.gradle.plugin.avro-base"
 apply plugin: "com.commercehub.gradle.plugin.avro"
 apply plugin: "com.github.imflog.kafka-schema-registry-gradle-plugin"
 
 group 'com.mahendran.kafka'
-version '1.0-SNAPSHOT'
+version = versioning.info.tag
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
@@ -100,13 +99,6 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        url "https://packages.confluent.io/maven/"
-    }
-}
-
 checkstyle {
     toolVersion = "$checkstyleVersion"
     ignoreFailures = false
@@ -114,6 +106,7 @@ checkstyle {
     maxWarnings = 0
     configProperties = ["suppressionFile": project(':').file('config/checkstyle/suppressions.xml')]
 }
+
 
 tasks.withType(com.github.spotbugs.SpotBugsTask) {
     reports.xml.enabled = false
@@ -144,25 +137,14 @@ jacocoTestReport {
 
 test.finalizedBy jacocoTestReport
 
-versionFile {
-    file = new File("$buildDir/generated-resources", "version.properties")
-}
-
-sourceSets {
-    main {
-        output.dir("$buildDir/generated-resources/version.properties", builtBy: versionFile)
-    }
-}
-
 test {
     useJUnitPlatform()
-    testLogging {
-        exceptionFormat "full"
-        showExceptions = true
-        showStackTraces = true
-        showStandardStreams = true
-    }
 }
+
+javadoc {
+    source = sourceSets.main.allJava
+}
+
 
 jar {
     from {
@@ -199,4 +181,92 @@ jar {
         into 'avro'
     }
     dependsOn generateSchema
+}
+repositories {
+    mavenCentral()
+    maven {
+        url "https://packages.confluent.io/maven/"
+    }
+    maven {
+        url = uri('https://artifactory.nordstrom.com/artifactory/gradle')
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_api_key}"
+        }
+    }
+    maven {
+        url = uri('https://artifactory.nordstrom.com/artifactory/maven')
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_api_key}"
+        }
+    }
+}
+
+//repositories {
+//    maven {
+//        url "https://artifactory.nordstrom.com/artifactory/maven"
+//        credentials {
+//            username = "${artifactory_user}"
+//            password = "${artifactory_api_key}"
+//        }
+//    }
+//}
+
+
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            from components.java
+//        }
+//    }
+//}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = "Nordstrom 1-Hop Event Merger Repository"
+                description = "Collection of business event schemas."
+                url = "https://gitlab.nordstrom.com/1-hop/event-merger"
+
+                developers {
+                    developer {
+                        id = "nordstrom"
+                        name = "Nordstrom developers"
+                    }
+                }
+                scm {
+                    connection = "https://gitlab.nordstrom.com/1-hop/event-merger"
+                    developerConnection = "https://gitlab.nordstrom.com/1-hop/event-merger"
+                    url = "https://gitlab.nordstrom.com/1-hop/event-merger"
+                }
+            }
+        }
+    }
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"
+    publish {
+        repository {
+            repoKey = "gradle-local"
+            username = "${artifactory_user}"
+            password = "${artifactory_api_key}"
+            maven = true
+        }
+        defaults {
+            publications("mavenJava")
+            publishArtifacts = true
+        }
+    }
+    resolve {
+        repository {
+            repoKey = "gradle"
+            username = "${artifactory_user}"
+            password = "${artifactory_api_key}"
+            // Nordstrom Artifactory team asks to use API key in place of password.
+            maven = true
+        }
+    }
 }
